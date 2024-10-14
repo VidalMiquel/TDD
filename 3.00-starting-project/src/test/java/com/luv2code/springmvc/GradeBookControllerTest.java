@@ -5,18 +5,17 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -56,6 +55,31 @@ public class GradeBookControllerTest {
     @Mock
     private StudentAndGradeService studentCreateServiceMock;
 
+        @Value("${sql.scripts.create.student}")
+    private String sqlAddStudent;
+    
+    
+    @Value("${sql.scripts.create.math.grade}")
+    private String sqlAddMathGrade;
+    
+    @Value("${sql.scripts.create.science.grade}")
+    private String sqlAddScienceGrade;
+
+    @Value("${sql.scripts.create.history.grade}")
+    private String sqlAddHistoryGrade;
+
+    @Value("${sql.scripts.delete.student}")
+    private String sqlDeleteStudent;
+
+    @Value("${sql.scripts.delete.math.grade}")
+    private String sqlDeleteMathGrade;
+
+    @Value("${sql.scripts.delete.science.grade}")
+    private String sqlDeleteScienceGrade;
+
+    @Value("${sql.scripts.delete.history.grade}")
+    private String sqlDeleteHistoryGrade;
+
     @BeforeAll
     //BeforeAll MUST be static.
     //Generating post request.
@@ -69,8 +93,10 @@ public class GradeBookControllerTest {
 
     @BeforeEach
     public void beforeEach() {
-        jdbc.execute("insert into student(id, firstname, lastname, email_address) " +
-                "values (1, 'Eric', 'Roby', 'eric.roby@luv2code_school.com')");
+        jdbc.execute(sqlAddStudent);
+        jdbc.execute(sqlAddMathGrade);
+        jdbc.execute(sqlAddScienceGrade);
+        jdbc.execute(sqlAddHistoryGrade);
     }
 
     @Test
@@ -147,7 +173,7 @@ public class GradeBookControllerTest {
     }
 
     @Test 
-    public void delteStundetHttpRequestErrorPage() throws Exception{
+    public void delteStudemtHttpRequestErrorPage() throws Exception{
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders
         .get("/delete/student/{id}", 0)).andExpect(status().isOk()).andReturn();
@@ -159,7 +185,10 @@ public class GradeBookControllerTest {
 
     @AfterEach
     public void setupAfterTransaction() {
-        jdbc.execute("DELETE FROM student");
+        jdbc.execute(sqlDeleteStudent);
+        jdbc.execute(sqlDeleteMathGrade);
+        jdbc.execute(sqlDeleteScienceGrade);
+        jdbc.execute(sqlDeleteHistoryGrade);
     }
 
 
