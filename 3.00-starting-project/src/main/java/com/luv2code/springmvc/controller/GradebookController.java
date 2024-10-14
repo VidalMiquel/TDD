@@ -3,16 +3,17 @@ package com.luv2code.springmvc.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.luv2code.springmvc.models.CollegeStudent;
 import com.luv2code.springmvc.models.Gradebook;
+import com.luv2code.springmvc.models.GradebookCollegeStudent;
 import com.luv2code.springmvc.service.StudentAndGradeService;
 
 
@@ -34,6 +35,31 @@ public class GradebookController {
 
     @GetMapping("/studentInformation/{id}")
     public String studentInformation(@PathVariable int id, Model m) {
+        if(!studentAndGradeService.checkIfStudentIsNull(id)){
+            return "error";
+        }
+
+        GradebookCollegeStudent studentEntity = studentAndGradeService.studentInformation(id);
+        m.addAttribute("student", studentEntity);
+        if(studentEntity.getStudentGrades().getMathGradeResults().size() > 0) {
+            m.addAttribute("mathAverage", studentEntity.getStudentGrades().
+            findGradePointAverage(studentEntity.getStudentGrades().getMathGradeResults()));
+        }else{
+            m.addAttribute("mathAverage", "N/A");
+        }
+        if(studentEntity.getStudentGrades().getScienceGradeResults().size() > 0) {
+            m.addAttribute("scienceAverage", studentEntity.getStudentGrades().
+            findGradePointAverage(studentEntity.getStudentGrades().getScienceGradeResults()));
+        }else{
+            m.addAttribute("scienceAverage", "N/A");
+        }
+        if(studentEntity.getStudentGrades().getHistoryGradeResults().size() > 0) {
+            m.addAttribute("historyAverage", studentEntity.getStudentGrades().
+            findGradePointAverage(studentEntity.getStudentGrades().getHistoryGradeResults()));
+        }else{
+            m.addAttribute("historyAverage", "N/A");
+        }
+
         return "studentInformation";
     }
 
@@ -61,6 +87,48 @@ public class GradebookController {
         m.addAttribute("students", collegeStudents);
         return "index";
     }
+
+    @PostMapping(value = "/grades")
+    public String createGrade(@RequestParam("grade") double grade,
+                              @RequestParam("gradeType") String gradeType,
+                              @RequestParam("studentId") int studentId, 
+                              Model m) {
+
+        if(!studentAndGradeService.checkIfStudentIsNull(studentId)){
+            return "error";
+        }
+
+        boolean success = studentAndGradeService.createGrade(grade, studentId, gradeType);
+
+        if(!success){
+            return "error";
+        }
+
+        GradebookCollegeStudent studentEntity = studentAndGradeService.studentInformation(studentId);
+        m.addAttribute("student", studentEntity);
+        if(studentEntity.getStudentGrades().getMathGradeResults().size() > 0) {
+            m.addAttribute("mathAverage", studentEntity.getStudentGrades().
+            findGradePointAverage(studentEntity.getStudentGrades().getMathGradeResults()));
+        }else{
+            m.addAttribute("mathAverage", "N/A");
+        }
+        if(studentEntity.getStudentGrades().getScienceGradeResults().size() > 0) {
+            m.addAttribute("scienceAverage", studentEntity.getStudentGrades().
+            findGradePointAverage(studentEntity.getStudentGrades().getScienceGradeResults()));
+        }else{
+            m.addAttribute("scienceAverage", "N/A");
+        }
+        if(studentEntity.getStudentGrades().getHistoryGradeResults().size() > 0) {
+            m.addAttribute("historyAverage", studentEntity.getStudentGrades().
+            findGradePointAverage(studentEntity.getStudentGrades().getHistoryGradeResults()));
+        }else{
+            m.addAttribute("historyAverage", "N/A");
+        }
+
+        return "studentInformation";
+    }
+
     
+
 
 }

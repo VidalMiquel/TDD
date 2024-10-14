@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -55,7 +57,7 @@ public class GradeBookControllerTest {
     @Mock
     private StudentAndGradeService studentCreateServiceMock;
 
-        @Value("${sql.scripts.create.student}")
+    @Value("${sql.scripts.create.student}")
     private String sqlAddStudent;
     
     
@@ -182,6 +184,62 @@ public class GradeBookControllerTest {
 
         ModelAndViewAssert.assertViewName(mav, "error");
     }
+
+    @Test
+    public void studentInformationHttpRequest() throws Exception{
+        assertTrue(studentDao.findById(1).isPresent());
+
+        MvcResult mvcREsult = mockMvc.perform(MockMvcRequestBuilders.get("/studentInformation/{id}",1))
+        .andExpect(status().isOk()).andReturn();
+
+        ModelAndView mav = mvcREsult.getModelAndView();
+
+        ModelAndViewAssert.assertViewName(mav,"studentInformation");
+    }
+
+    @Test
+    public void studentInformationHttpStudentDoesNotExistRequest() throws Exception {
+    
+        // Ensure that the student with ID 0 does not exist
+        assertFalse(studentDao.findById(0).isPresent());
+    
+        // Perform the GET request to /studentInformation/0
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/studentInformation/{id}", 0))
+                .andExpect(status().isOk()) // Expecting a 404 Not Found if the student doesn't exist
+                .andReturn();
+                                    
+        // Get the ModelAndView object from the result
+        ModelAndView mav = mvcResult.getModelAndView();
+    
+        // Assert that the view name is "error"
+        ModelAndViewAssert.assertViewName(mav, "error");
+    }
+
+    @Test
+    public void createValidGradeHttpRequest() throws Exception {
+
+        assertTrue(studentDao.findById(1).isPresent());
+
+        GradebookCollegeStudent student = studentCreateServiceMock.studentInformation(1);
+
+        assertEquals(1, student.getStudentGrades().getMathGradeResults().size());
+
+        MvcResult mvcResult = this.mockMvc.perform(post("/grades")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("grade", "85.00")
+                        .param("gradeType", "math")
+                        .param("studentId", "1")).andExpect(status().isOk()).andReturn();
+
+        ModelAndView mav = mvcResult.getModelAndView();
+
+        ModelAndViewAssert.assertViewName(mav, "studentInformation");
+
+        student = studentCreateServiceMock.studentInformation(1);
+
+        assertEquals(2, student.getStudentGrades().getMathGradeResults().size());
+    }
+
+    
 
     @AfterEach
     public void setupAfterTransaction() {
