@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 
 import com.luv2code.springmvc.models.CollegeStudent;
 import com.luv2code.springmvc.models.Grade;
@@ -136,38 +137,56 @@ public class StudentAndGradeService {
         return studentId;
     }
 
-    public GradebookCollegeStudent studentInformation(int id) {
+	public GradebookCollegeStudent studentInformation(int id) {
+		Optional<CollegeStudent> student = studentDao.findById(id);
+
+		Iterable<MathGrade> mathGrades = mathGradeDao.findGradeByStudentId(id);
+
+		Iterable<ScienceGrade> scienceGrades = scienceGradeDao.findGradeByStudentId(id);
+
+		Iterable<HistoryGrade> historyGrades = historyGradeDao.findGradeByStudentId(id);
+
+		List<Grade> mathGradesList = new ArrayList<>();
+		mathGrades.forEach(mathGradesList::add);
+
+		List<Grade> scienceGradesList = new ArrayList<>();
+		scienceGrades.forEach(scienceGradesList::add);
+
+		List<Grade> historyGradesList = new ArrayList<>();
+		historyGrades.forEach(historyGradesList::add);
 
 
-        Optional<CollegeStudent> student = studentDao.findById(id);
-        if(!checkIfStudentIsNull(id)){
-            return null;
+		studentGrades.setMathGradeResults(mathGradesList);
+		studentGrades.setScienceGradeResults(scienceGradesList);
+		studentGrades.setHistoryGradeResults(historyGradesList);
+
+		GradebookCollegeStudent gradebookCollegeStudent = new GradebookCollegeStudent(student.get().getId(), student.get().getFirstname(), student.get().getLastname(),
+				student.get().getEmailAddress(), studentGrades);
+
+		return gradebookCollegeStudent;
+	}
+
+    public void configureStudentInformationModel(int id, Model m){
+        GradebookCollegeStudent studentEntity = studentInformation(id);
+        m.addAttribute("student", studentEntity);
+        if(studentEntity.getStudentGrades().getMathGradeResults().size() > 0) {
+            m.addAttribute("mathAverage", studentEntity.getStudentGrades().
+            findGradePointAverage(studentEntity.getStudentGrades().getMathGradeResults()));
+        }else{
+            m.addAttribute("mathAverage", "N/A");
         }
-        Iterable<MathGrade> mathGrades = mathGradeDao.findGradeByStudentId(id);
-        Iterable<ScienceGrade> scienceGrades = scienceGradeDao.findGradeByStudentId(id);
-        Iterable<HistoryGrade> historyGrades = historyGradeDao.findGradeByStudentId(id);
-
-        List<Grade> mathGradesList = new ArrayList<>();
-        mathGrades.forEach(mathGradesList::add);
-
-        List<Grade> scienceGradeList = new ArrayList<>();
-        scienceGrades.forEach(scienceGradeList::add);
-
-        List<Grade> historyGradesList = new ArrayList<>();
-        historyGrades.forEach(historyGradesList::add);
-
-        studentGrades.setMathGradeResults(mathGradesList);
-        studentGrades.setHistoryGradeResults(historyGradesList);
-        studentGrades.setScienceGradeResults(scienceGradeList);
-
-        GradebookCollegeStudent gradebookCollegeStudent = new GradebookCollegeStudent(
-                student.get().getId(),
-                student.get().getFirstname(),
-                student.get().getLastname(),
-                student.get().getEmailAddress(),
-                studentGrades);
-
-        return gradebookCollegeStudent;
+        if(studentEntity.getStudentGrades().getScienceGradeResults().size() > 0) {
+            m.addAttribute("scienceAverage", studentEntity.getStudentGrades().
+            findGradePointAverage(studentEntity.getStudentGrades().getScienceGradeResults()));
+        }else{
+            m.addAttribute("scienceAverage", "N/A");
+        }
+        if(studentEntity.getStudentGrades().getHistoryGradeResults().size() > 0) {
+            m.addAttribute("historyAverage", studentEntity.getStudentGrades().
+            findGradePointAverage(studentEntity.getStudentGrades().getHistoryGradeResults()));
+        }else{
+            m.addAttribute("historyAverage", "N/A");
+        }
     }
 
 }

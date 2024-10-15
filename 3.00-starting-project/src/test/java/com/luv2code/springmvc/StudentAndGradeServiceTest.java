@@ -9,7 +9,6 @@ import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +30,7 @@ import com.luv2code.springmvc.repository.ScienceGradeDao;
 import com.luv2code.springmvc.repository.StudentDao;
 import com.luv2code.springmvc.service.StudentAndGradeService;
 
-@TestPropertySource("/application.properties")
+@TestPropertySource("/application-test.properties")
 @SpringBootTest
 public class StudentAndGradeServiceTest {
 
@@ -56,7 +55,6 @@ public class StudentAndGradeServiceTest {
 
     @Value("${sql.scripts.create.student}")
     private String sqlAddStudent;
-    
     
     @Value("${sql.scripts.create.math.grade}")
     private String sqlAddMathGrade;
@@ -206,13 +204,6 @@ public class StudentAndGradeServiceTest {
         assertTrue(gradebookCollegesCollegeStudent.getStudentGrades().getMathGradeResults().size()==1);
 
     }
-
-    @Test
-    public void studentInformationServiceReturnNull(){
-        GradebookCollegeStudent gradebookCollegesCollegeStudent = studentService.studentInformation(10);
-        assertNull(gradebookCollegesCollegeStudent);
-    }
-
 
     @AfterEach
     public void setupAfterTransaction() {

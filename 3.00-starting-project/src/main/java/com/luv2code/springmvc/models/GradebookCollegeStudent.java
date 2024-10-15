@@ -14,6 +14,7 @@ public class GradebookCollegeStudent extends CollegeStudent{
         super(firstname, lastname, emailAddress);
         this.studentGrades = studentGrades;
         this.id = id;
+        System.out.println(this.id);
     }
 
     public StudentGrades getStudentGrades() {
